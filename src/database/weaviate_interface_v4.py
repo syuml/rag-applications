@@ -213,17 +213,16 @@ class WeaviateWCS:
 
     def _format_response(
         self,
-        response: QueryReturn,  # type: ignore
+        response: QueryReturn,
     ) -> list[dict[str, Any]]:
         """
         Formats json response from Weaviate into a list of dictionaries.
         Expands _additional fields if present into top-level dictionary.
         """
-        results = [  # type: ignore
-            {**o.properties, **self._get_meta(o.metadata)}
-            for o in response.objects  # type: ignore
+        results = [
+            {**o.properties, **self._get_meta(o.metadata)} for o in response.objects
         ]
-        return results  # type: ignore
+        return results
 
     def _get_meta(self, metadata: MetadataReturn) -> dict[str, Any]:
         """
@@ -241,7 +240,7 @@ class WeaviateWCS:
         filter: Filter | None = None,
         return_properties: list[str] | None = None,
         return_raw: bool = False,
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    ) -> QueryReturn | list[dict[str, Any]]:
         """
         Executes Keyword (BM25) search.
 
@@ -268,7 +267,7 @@ class WeaviateWCS:
             return_properties if return_properties else self.return_properties
         )
         collection = self._client.collections.get(collection_name)
-        response = collection.query.bm25(  # type: ignore
+        response: QueryReturn = collection.query.bm25(  # type: ignore
             query=request,
             query_properties=query_properties,
             limit=limit,
@@ -276,7 +275,6 @@ class WeaviateWCS:
             return_metadata=MetadataQuery(score=True),
             return_properties=return_properties,
         )
-        # response = response.with_where(where_filter).do() if where_filter else response.do()
         if return_raw:
             return response
         else:
@@ -291,7 +289,7 @@ class WeaviateWCS:
         filter: Filter | None = None,
         return_raw: bool = False,
         device: str = "cuda:0" if cuda.is_available() else "cpu",
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    ) -> QueryReturn | list[dict[str, Any]]:
         """
         Executes vector search using embedding model defined on instantiation
         of WeaviateClient instance.
@@ -318,7 +316,7 @@ class WeaviateWCS:
         )
         query_vector = self._create_query_vector(request, device=device)
         collection = self._client.collections.get(collection_name)
-        response = collection.query.near_vector(  # type: ignore
+        response: QueryReturn = collection.query.near_vector(  # type: ignore
             near_vector=query_vector,
             limit=limit,
             filters=filter,  # type: ignore
@@ -337,14 +335,14 @@ class WeaviateWCS:
         if self.model_name_or_path in self.OPENAI_EMBEDDING_MODELS:
             return self.get_openai_embedding(query)
         else:
-            return self.model.encode(query, device=device).tolist()
+            return self.model.encode(query, device=device).tolist()  # type: ignore
 
     def get_openai_embedding(self, query: str) -> list[float]:
         """
         Gets embedding from OpenAI API for query.
         """
-        embedding = self.model.embeddings.create(
-            input=query, model="text-embedding-ada-002"
+        embedding = self.model.embeddings.create(  # type: ignore
+            input=query, model=self.model_name_or_path
         ).model_dump()
         if embedding:
             return embedding["data"][0]["embedding"]
@@ -362,7 +360,7 @@ class WeaviateWCS:
         return_properties: list[str] | None = None,
         return_raw: bool = False,
         device: str = "cuda:0" if cuda.is_available() else "cpu",
-    ) -> dict[str, Any] | list[dict[str, Any]]:
+    ) -> QueryReturn | list[dict[str, Any]]:
         """
         Executes Hybrid (Keyword + Vector) search.
 
@@ -396,7 +394,7 @@ class WeaviateWCS:
         )
         query_vector = self._create_query_vector(request, device=device)
         collection = self._client.collections.get(collection_name)
-        response = collection.query.hybrid(  # type: ignore
+        response: QueryReturn = collection.query.hybrid(  # type: ignore
             query=request,
             query_properties=query_properties,
             filters=filter,  # type: ignore
@@ -492,7 +490,7 @@ class WeaviateIndexer:
         if any(failed_objects):
             error_messages = [obj.message for obj in failed_objects]
             doc_ids = [
-                obj.object_.properties.get(unique_id_field, "Not Found")
+                obj.object_.properties.get(unique_id_field, "Not Found")  # type: ignore
                 for obj in failed_objects
             ]
         else:
