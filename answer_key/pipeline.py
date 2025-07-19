@@ -196,16 +196,3 @@ def create_parent_chunk_cache(parent_chunks: list[dict]) -> dict:
         for k, v in chunk.items():
             content_cache[k] = v
     return content_cache
-
-
-if __name__ == "__main__":
-    with open("/Users/chrissanchez/rag-applications/data/huberman_labs.json", "r") as f:
-        import json
-
-        corpus = json.loads(f.read())
-    dataset = create_dataset(corpus, device="mps", overwrite_existing=True)
-    with open(
-        "/Users/chrissanchez/rag-applications/data/huberman_labs_processed_dataset.json",
-        "w",
-    ) as f:
-        f.write(json.dumps(dataset, indent=2))
