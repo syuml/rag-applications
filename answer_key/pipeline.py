@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from itertools import groupby
 from typing import Any
@@ -12,8 +13,9 @@ from llama_index.core.text_splitter import (
 from rich import print
 from sentence_transformers import SentenceTransformer
 from torch import cuda
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
+sys.path.append("../")
 # external files
 from src.preprocessor.preprocessing import (
     FileIO,  # bad ass tokenizer library for use with OpenAI LLMs
@@ -113,7 +115,7 @@ def create_dataset(
     io = FileIO()
     file_path = f"{file_outpath_prefix}-{chunk_size}.parquet"
     # fail early prior to kicking off expensive job
-    if os.path.exists(file_path) and overwrite_existing == False:
+    if os.path.exists(file_path) and not overwrite_existing:
         raise FileExistsError(
             f"File by name {file_path} already exists, try using another file name or set overwrite_existing to True."
         )
