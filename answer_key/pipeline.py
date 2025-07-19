@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from itertools import groupby
 from typing import Any
@@ -12,8 +13,9 @@ from llama_index.core.text_splitter import (
 from rich import print
 from sentence_transformers import SentenceTransformer
 from torch import cuda
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
+sys.path.append("../")
 # external files
 from src.preprocessor.preprocessing import (
     FileIO,  # bad ass tokenizer library for use with OpenAI LLMs
@@ -113,7 +115,7 @@ def create_dataset(
     io = FileIO()
     file_path = f"{file_outpath_prefix}-{chunk_size}.parquet"
     # fail early prior to kicking off expensive job
-    if os.path.exists(file_path) and overwrite_existing == False:
+    if os.path.exists(file_path) and not overwrite_existing:
         raise FileExistsError(
             f"File by name {file_path} already exists, try using another file name or set overwrite_existing to True."
         )
@@ -194,3 +196,16 @@ def create_parent_chunk_cache(parent_chunks: list[dict]) -> dict:
         for k, v in chunk.items():
             content_cache[k] = v
     return content_cache
+
+
+if __name__ == "__main__":
+    with open("/Users/chrissanchez/rag-applications/data/huberman_labs.json", "r") as f:
+        import json
+
+        corpus = json.loads(f.read())
+    dataset = create_dataset(corpus, device="mps", overwrite_existing=True)
+    with open(
+        "/Users/chrissanchez/rag-applications/data/huberman_labs_processed_dataset.json",
+        "w",
+    ) as f:
+        f.write(json.dumps(dataset, indent=2))
