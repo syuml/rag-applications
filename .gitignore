@@ -15,6 +15,7 @@ data/raw/
 data/videos/
 data/*.parquet
 # answer_key
+answer_key
 notebooks/videos
 notebooks/transcripts
 notebooks/data_ingest/videos

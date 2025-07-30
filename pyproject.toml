@@ -38,4 +38,5 @@ dependencies = [
     "instructor>=1.5.2",
     "accelerate>=1.1.1",
     "deepeval==1.5.2",
+    "semantic-router[local]>=0.0.72",
 ]
